@@ -27,7 +27,6 @@ class Game
     Console.Write("My name is: ");
     name = Console.ReadLine();
     confirmname:
-    Console.WriteLine("Lol");
     Console.Clear();
     Console.WriteLine("Your name is {0}?\n", name);
     Console.WriteLine("My name is {0} - Press Y\nMy name isn't {0} - Press N", name);
