@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+
+
 class Game
 {
   static void Main()
@@ -60,6 +63,17 @@ class Game
 
   static void LaunchGame(Character player)
   {
-    player.PrintStats();
+    Random rng = new Random();
+    int rngInt;
+    //Game Loop.
+    for( ;true;player.progress++;)
+    {
+      rngInt = rng.Next();
+      
+    }
+
+    //Should never happen, unless testing.
+    Console.WriteLine("Program Ending");
+    Console.ReadKey(true);
   }
 }
