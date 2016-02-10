@@ -20,20 +20,32 @@ class Character:Entity
   }
   public void CharacterAttack(string attack, out Character player, out Monster enemy)
   {
+    int result;
     // Strong attack
     if(attack == "strong")
     {
-      enemy.HP =- (player.atk * 1.25) - enemy.def;
+      result = (player.atk) - enemy.def;
     }
     // Hits defense-focussed enemies harder.
     else if (attack == "other")
     {
-      enemy.HP =- (player.atk * 0.5);
+      result = (player.atk * 0.5);
     }
+
+    return result;
   }
 }
 
 class Monster:Entity
 {
-
+  public int EnemyBasic(out Character player, out Monster enemy)
+  {
+    int result = enemy.atk - player.def;
+    return result;
+  }
+  public int EnemyStrong(out Character player, out Monster enemy)
+  {
+    int result = (enemy.atk * 100);
+    return result; 
+  }
 }
