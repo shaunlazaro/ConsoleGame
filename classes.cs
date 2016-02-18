@@ -2,9 +2,9 @@ using System;
 
 abstract class Entity
 {
-  public int hp;
-  public int def;
-  public int atk;
+  public double hp;
+  public double def;
+  public double atk;
   public int progress;
   public string name;
 
@@ -16,7 +16,7 @@ class Character:Entity
   {
     Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
                       name, hp, atk, def);
-    Console.WriteLine("Progress Made: {0}\n",progress);
+    Console.WriteLine("{0}'s Progress: {0}\n",progress);
   }
   public void CharacterAttack(string attack, out Character player, out Monster enemy)
   {

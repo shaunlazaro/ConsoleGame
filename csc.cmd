@@ -1,3 +1,5 @@
+:start
+
 @rem Run the C# compiler with the path set temporarily.
 @rem George Freeman 2011-Sep-12/2013-Sep-08
 @rem Notes:
@@ -62,4 +64,5 @@
 
 :end
 @pause
+@goto :start
 @endlocal
