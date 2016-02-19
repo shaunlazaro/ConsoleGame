@@ -8,26 +8,28 @@ abstract class Entity
   public int progress;
   public string name;
 
-}
-
-class Character:Entity
-{
   public void PrintStats()
   {
     Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
                       name, hp, atk, def);
     Console.WriteLine("{0}'s Progress: {0}\n",progress);
   }
-  public void CharacterAttack(string attack, out Character player, out Monster enemy)
+
+}
+
+class Character:Entity
+{
+
+  public double CharacterAttack(string attack, Character player, Monster enemy)
   {
-    int result;
+    double result;
     // Strong attack
     if(attack == "strong")
     {
       result = (player.atk) - enemy.def;
     }
     // Hits defense-focussed enemies harder.
-    else if (attack == "other")
+    else
     {
       result = (player.atk * 0.5);
     }
@@ -38,14 +40,14 @@ class Character:Entity
 
 class Monster:Entity
 {
-  public int EnemyBasic(out Character player, out Monster enemy)
+  public double EnemyBasic(Character player, Monster enemy)
   {
-    int result = enemy.atk - player.def;
+    double result = enemy.atk - player.def;
     return result;
   }
-  public int EnemyStrong(out Character player, out Monster enemy)
+  public double EnemyStrong(ref Character player, ref Monster enemy)
   {
-    int result = (enemy.atk * 100);
+    double result = (enemy.atk * 0.7);
     return result; 
   }
 }

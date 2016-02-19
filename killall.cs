@@ -68,11 +68,11 @@ class Game
     //Game Loop.
     while(true)
     {
-      CreateMonster(player, rng.Next( 1, 4 ), out enemy);
+      CreateMonster(player, rng.Next( 1, 4 ), ref enemy);
       
       // The combat method will return true if the player wins,
       // or false if the player dies.
-      if(Combat(out player, out enemy))
+      if(Combat(ref player, enemy))
       {
       Console.Clear();
       Console.WriteLine("After that encounter, you continue on");
@@ -94,7 +94,7 @@ class Game
 
   // The CreateMonster method accepts a scenario from 1-3, then generates a monster with stats.
   // The method will also give a brief description to player before combat starts.
-  static void CreateMonster(Character player, int scenario, out Monster enemy)
+  static void CreateMonster(Character player, int scenario, ref Monster enemy)
   {
     enemy.hp = player.hp;
     enemy.atk = player.atk;
@@ -118,15 +118,19 @@ class Game
       Console.WriteLine("The creature in front of you cowers in fear, but won't let you progress.");
     }
 
+    enemy.PrintStats();
     Console.ReadKey(true);
+    Console.Clear();
   }
 
-  static bool Combat(out Character player, out Monster enemy)
+  static bool Combat(ref Character player, Monster enemy)
   {
-    currentPlayerHp = player.hp;
+    double currentPlayerHp = player.hp;
+    Console.WriteLine("Combat Begins");
+    Console.ReadKey(true);
     while(currentPlayerHp > 1 && enemy.hp > 1)
     {
-
+      ConsoleKeyInfo keyPrompt = CombatPrompt(player, enemy);
     }
     bool playerWin = false;
     if(currentPlayerHp > 0)
@@ -136,4 +140,25 @@ class Game
     return playerWin;
   }
 
+  static ConsoleKeyInfo CombatPrompt(Character player, Monster enemy)
+  {
+    ConsoleKeyInfo playerPress = new ConsoleKeyInfo();
+    Console.Clear();
+    promptAction:
+    player.PrintStats();
+    enemy.PrintStats();
+    Console.WriteLine("What would you like to do?");
+    Console.WriteLine("\n Blunt Force Attack - A\n Piercing Attack - S ");
+    playerPress = Console.ReadKey(true);
+    string playerPressString = playerPress.Key.ToString();
+    playerPressString = playerPressString.ToLower();
+    if(playerPressString != "a" && playerPressString != "s")
+    {
+      Console.Clear();
+      Console.WriteLine("Please press a or s\n");
+      Console.ReadKey(true);
+      goto promptAction;      
+    }
+    return playerPress;
+  }
 }
