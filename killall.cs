@@ -8,16 +8,78 @@ class Game
   {
     Character player = new Character();
     CreatePlayer(ref player);
+    TitleScreen();
     LaunchGame(player);
   }
   static void CreatePlayer(ref Character player)
   {
-    player.hp  = 10;
-    player.atk = 1;
-    player.def = 1;
+    player.hp  = 100;
+    player.atk = 10;
+    player.def = 2;
     player.progress = 1;
     player.name = ChooseName();
   }
+  static void TitleScreen()
+  {    
+    Console.Clear();
+    title:
+    Console.WriteLine("KILLALL\n\n");
+    Console.WriteLine("Launch Game  - Press A");
+    Console.WriteLine("Instructions - Press S");
+    Console.WriteLine("Credits      - Press D");
+   
+    string inputString = "ssss";
+    ConsoleKeyInfo input = new ConsoleKeyInfo();
+
+    input = Console.ReadKey(true);
+    inputString = input.Key.ToString();
+    inputString = inputString.ToLower();
+
+    if(inputString == "s")
+    {
+      Console.Clear();
+      Instructions();
+    }
+    else if(inputString == "d")
+    {
+      Console.Clear();
+      Credits();
+    }
+    else if(inputString == "a")
+    {
+      Console.Clear();
+    }
+    else
+    {
+      goto title;
+    }
+  }
+
+  static void Instructions()
+  {
+    Console.WriteLine("In the KillAll game, your goal is to get as far as possible...\n");
+    Console.ReadKey(true);
+    Console.WriteLine("Before you die");
+    Console.ReadKey(true);
+    Console.WriteLine("You will fight monsters");
+    Console.ReadKey(true);
+    Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well");
+    Console.WriteLine("Your piercing attack hits the enemy weakly, but ignores enemy defense.");
+    Console.ReadKey(true);
+    Console.Clear();
+
+    TitleScreen();
+  }
+  static void Credits()
+  {
+    Console.WriteLine("EVERYTHING BY SHAUN LAZARO XG");
+    Console.ReadKey(true);
+    Console.Clear();
+    TitleScreen();
+  }
+
+
+
   static string ChooseName()
   {
     string name;
@@ -45,14 +107,14 @@ class Game
     else if (inputString == "n")
     {
       Console.Clear();
-      Console.WriteLine("Then what is your name?");
+      WriteRed("Then what is your name?");
       Console.ReadKey(true);
       goto selectname;
     }
     else
     {
       Console.Clear();
-      Console.WriteLine("Please input the correct key.\n");
+      WriteRed("Please input the correct key.\n");
       Console.ReadKey(true);
       goto confirmname;
     }
@@ -75,21 +137,18 @@ class Game
       if(Combat(ref player, enemy))
       {
       Console.Clear();
-      Console.WriteLine("After that encounter, you continue on");
+      Console.WriteLine("After that encounter, you continue on...");
       Console.ReadKey(true);
       player.progress++;
       }
       else
       {
         Console.Clear();
-        Console.WriteLine("You died");
+        WriteRed("You died");
         player.PrintStats();
         while(true);
       }
     }
-    //Should never happen, unless testing.
-    Console.WriteLine("Program Ending");
-    Console.ReadKey(true);
   }
 
   // The CreateMonster method accepts a scenario from 1-3, then generates a monster with stats.
@@ -126,12 +185,31 @@ class Game
   static bool Combat(ref Character player, Monster enemy)
   {
     double currentPlayerHp = player.hp;
-    Console.WriteLine("Combat Begins");
-    Console.ReadKey(true);
     while(currentPlayerHp > 1 && enemy.hp > 1)
     {
       ConsoleKeyInfo keyPrompt = CombatPrompt(player, enemy);
+      Console.Clear();
+      if(keyPrompt.Key.ToString().ToLower() == "a")
+      {
+        Console.WriteLine("You hit the enemy hard, but the monster blocks some damage.");
+        enemy.hp -= player.CharacterAttack("strong", player, enemy);
+      }
+      else if (keyPrompt.Key.ToString().ToLower() == "s")
+      {
+        Console.WriteLine("You aim, and strike at the monster's weak point.");
+        enemy.hp -= player.CharacterAttack("pierce", player, enemy);
+      }
+      else
+      {
+        WriteRed("Welp, Game Broke.");
+      }
+      Console.ReadKey(true);
+
+      Console.WriteLine("The enemy returns with an attack of its own!");
+      currentPlayerHp -= enemy.EnemyBasic(player, enemy);
     }
+    Console.WriteLine("The monster has been slain.");
+    Console.ReadKey();
     bool playerWin = false;
     if(currentPlayerHp > 0)
     {
@@ -155,10 +233,25 @@ class Game
     if(playerPressString != "a" && playerPressString != "s")
     {
       Console.Clear();
-      Console.WriteLine("Please press a or s\n");
+      WriteRed("Please press A or S\n");
       Console.ReadKey(true);
       goto promptAction;      
     }
     return playerPress;
+  }
+
+  // Used For Errors.
+  static void WriteRed(string s)
+  {
+    Console.BackgroundColor = ConsoleColor.White;
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine(s);
+    Console.ResetColor();
+  }
+
+  // Used for narration parts.
+  static void WriteNarration(string s)
+  {
+    //WIP
   }
 }
