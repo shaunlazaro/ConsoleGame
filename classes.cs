@@ -6,6 +6,7 @@ abstract class Entity
   public double def;
   public double atk;
   public int progress;
+  public int initialProgress;
   public string name;
 
 }
@@ -18,6 +19,14 @@ class Character:Entity
     Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
                       name, hp, atk, def);
     Console.WriteLine("{0}'s Progress: {1}\n", name, progress);
+  }
+
+  public void DeathSave()
+  {
+    Console.WriteLine("Your progress will now be printed to the file, if you got further than last time!");
+
+    Console.ReadKey(true);
+    
   }
 
   public double CharacterAttack(string attack, Character player, Monster enemy)
@@ -45,7 +54,6 @@ class Monster:Entity
   {
     Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
                       "Monster", hp, atk, def);
-    Console.WriteLine("{0}'s Progress: {1}\n", "Monster", progress);
   }
   public double EnemyBasic(Character player, Monster enemy)
   {

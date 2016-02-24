@@ -11,12 +11,35 @@ class Game
     TitleScreen();
     LaunchGame(player);
   }
+
+  //Save Format:
+  //HP
+  //ATK
+  //DEF
+  //Progress
   static void CreatePlayer(ref Character player)
   {
+    string fileLocation = @"save.txt";
+    if(File.Exists(fileLocation))
+    {
+      StreamReader x = new StreamReader(fileLocation);
+      using (x)
+      {
+      player.hp  = double.Parse(x.ReadLine());
+      player.atk = double.Parse(x.ReadLine());
+      player.def = double.Parse(x.ReadLine());
+      player.initialProgress = int.Parse(x.ReadLine());
+      player.progress = player.initialProgress;
+      }
+    }
+    else
+    {
     player.hp  = 100;
     player.atk = 10;
     player.def = 2;
     player.progress = 1;
+    player.initialProgress = 0;
+    }
     player.name = ChooseName();
   }
   static void TitleScreen()
@@ -57,14 +80,16 @@ class Game
 
   static void Instructions()
   {
+    Console.WriteLine("Instructions \n\n\n");
     Console.WriteLine("In the KillAll game, your goal is to get as far as possible...\n");
     Console.ReadKey(true);
     Console.WriteLine("Before you die");
     Console.ReadKey(true);
     Console.WriteLine("You will fight monsters");
     Console.ReadKey(true);
-    Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well");
+    Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well.");
     Console.WriteLine("Your piercing attack hits the enemy weakly, but ignores enemy defense.");
+    Console.WriteLine("You may heal yourself, at the cost of a battle's worth of progress.");
     Console.ReadKey(true);
     Console.Clear();
 
@@ -146,7 +171,7 @@ class Game
         Console.Clear();
         WriteRed("You died");
         player.PrintStats();
-        while(true);
+        Death(player);
       }
     }
   }
@@ -155,13 +180,13 @@ class Game
   // The method will also give a brief description to player before combat starts.
   static void CreateMonster(Character player, int scenario, ref Monster enemy)
   {
-    enemy.hp = player.hp;
-    enemy.atk = player.atk;
-    enemy.def = player.def;
+    enemy.hp = progress * 15;
+    enemy.atk = progress / 2 + 1;
+    enemy.def = progress / 2 + 1;
     if(scenario == 1)
     {
-      enemy.hp += player.hp * 0.5;
-      enemy.def = player.def * 0.5;
+      enemy.hp += progress * 0.5;
+      enemy.def += progress * 0.5;
       Console.WriteLine("As you progress, the growls tell you that you are in claimed land...");
     }
     else if (scenario == 2)
@@ -184,37 +209,46 @@ class Game
 
   static bool Combat(ref Character player, Monster enemy)
   {
-    double currentPlayerHp = player.hp;
-    while(currentPlayerHp > 1 && enemy.hp > 1)
+    double maxPlayerHp = player.hp;
+    while(player.hp > 1 && enemy.hp > 1)
     {
       ConsoleKeyInfo keyPrompt = CombatPrompt(player, enemy);
       Console.Clear();
       if(keyPrompt.Key.ToString().ToLower() == "a")
       {
-        Console.WriteLine("You hit the enemy hard, but the monster blocks some damage.");
+        Console.WriteLine("You hit the enemy hard, but the monster blocks some damage.\n You do {0} damage", 
+          player.CharacterAttack("strong", player, enemy));
         enemy.hp -= player.CharacterAttack("strong", player, enemy);
       }
       else if (keyPrompt.Key.ToString().ToLower() == "s")
       {
-        Console.WriteLine("You aim, and strike at the monster's weak point.");
+        Console.WriteLine("You aim, and strike at the monster's weak point. \n You do {0} damage", 
+          player.CharacterAttack("pierce", player, enemy));
         enemy.hp -= player.CharacterAttack("pierce", player, enemy);
       }
-      else
+      else if(keyPrompt.Key.ToString().ToLower() == "h")
       {
+        Console.WriteLine ("You focus, and your mind repairs itself.  You feel closer to home.");
+        player.hp = maxPlayerHp;
+        player.progress--;
+      }
+      else{
         WriteRed("Welp, Game Broke.");
       }
       Console.ReadKey(true);
 
       Console.WriteLine("The enemy returns with an attack of its own!");
-      currentPlayerHp -= enemy.EnemyBasic(player, enemy);
+      player.hp -= enemy.EnemyBasic(player, enemy);
+      Console.ReadKey(true);
     }
     Console.WriteLine("The monster has been slain.");
     Console.ReadKey();
     bool playerWin = false;
-    if(currentPlayerHp > 0)
+    if(player.hp > 0)
     {
       playerWin = true;
     }
+    player.hp = maxPlayerHp;
     return playerWin;
   }
 
@@ -226,11 +260,13 @@ class Game
     player.PrintStats();
     enemy.PrintStats();
     Console.WriteLine("What would you like to do?");
-    Console.WriteLine("\n Blunt Force Attack - A\n Piercing Attack - S ");
+    Console.WriteLine("\n Blunt Force Attack - A" +
+                      "\n Piercing Attack    - S" +
+                      "\n Heal Yourself      - H");
     playerPress = Console.ReadKey(true);
     string playerPressString = playerPress.Key.ToString();
     playerPressString = playerPressString.ToLower();
-    if(playerPressString != "a" && playerPressString != "s")
+    if(playerPressString != "a" && playerPressString != "s" && playerPressString != "h")
     {
       Console.Clear();
       WriteRed("Please press A or S\n");
@@ -243,7 +279,7 @@ class Game
   // Used For Errors.
   static void WriteRed(string s)
   {
-    Console.BackgroundColor = ConsoleColor.White;
+    Console.BackgroundColor = ConsoleColor.Cyan;
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine(s);
     Console.ResetColor();
@@ -253,5 +289,17 @@ class Game
   static void WriteNarration(string s)
   {
     //WIP
+  }
+
+  static void Death(Character player)
+  {
+    Console.ReadKey(true);
+    Console.Clear();
+    Console.WriteLine("Although it may seem pointless, every end is a new beginning");
+    Console.WriteLine("Your stats will increase based on how far you got");
+    Console.ReadKey();
+    Console.Clear();
+    player.DeathSave();
+    while(true);
   }
 }
