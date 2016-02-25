@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 abstract class Entity
 {
@@ -13,6 +14,7 @@ abstract class Entity
 
 class Character:Entity
 {
+  public bool healed;
 
   public void PrintStats()
   {
@@ -24,9 +26,19 @@ class Character:Entity
   public void DeathSave()
   {
     Console.WriteLine("Your progress will now be printed to the file, if you got further than last time!");
-
-    Console.ReadKey(true);
-    
+    if (progress > initialProgress)
+    {
+      using(StreamWriter saveStats = new StreamWriter("save.txt"))
+      {
+        saveStats.WriteLine(progress);
+        saveStats.WriteLine(name);
+      }
+      Console.ReadKey(true);
+    }
+    else
+    {
+      Console.WriteLine("Well, you didn't get further, suks 4 u");
+    }
   }
 
   public double CharacterAttack(string attack, Character player, Monster enemy)
@@ -58,6 +70,7 @@ class Monster:Entity
   public double EnemyBasic(Character player, Monster enemy)
   {
     double result = enemy.atk - player.def;
+    if(result < 0){result = 1;}
     Console.WriteLine("The monster strikes you for {0} damage", result);
     return result;
   }

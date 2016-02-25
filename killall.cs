@@ -20,27 +20,32 @@ class Game
   static void CreatePlayer(ref Character player)
   {
     string fileLocation = @"save.txt";
-    if(File.Exists(fileLocation))
-    {
-      StreamReader x = new StreamReader(fileLocation);
-      using (x)
-      {
-      player.hp  = double.Parse(x.ReadLine());
-      player.atk = double.Parse(x.ReadLine());
-      player.def = double.Parse(x.ReadLine());
-      player.initialProgress = int.Parse(x.ReadLine());
-      player.progress = player.initialProgress;
-      }
-    }
-    else
-    {
     player.hp  = 100;
     player.atk = 10;
     player.def = 2;
     player.progress = 1;
     player.initialProgress = 0;
+
+    if(File.Exists(fileLocation))
+    {
+      StreamReader x = new StreamReader(fileLocation);
+      using (x)
+      {
+        int playerProgress = int.Parse(x.ReadLine());
+        player.hp  += playerProgress;
+        player.atk += playerProgress;
+        player.def += playerProgress / 2 - 2;
+        player.initialProgress = playerProgress;
+        player.name = x.ReadLine();
+      }
+      Console.Clear();
+      Console.WriteLine("You feel the power of your ancestors passing through your body");
+      Console.ReadKey(true);
     }
-    player.name = ChooseName();
+    else
+    {
+      player.name = ChooseName();
+    }
   }
   static void TitleScreen()
   {    
@@ -50,7 +55,10 @@ class Game
     Console.WriteLine("Launch Game  - Press A");
     Console.WriteLine("Instructions - Press S");
     Console.WriteLine("Credits      - Press D");
-   
+    if(File.Exists(@"save.txt"))
+    {
+    Console.WriteLine("\nDelete Save- Press F");
+    }
     string inputString = "ssss";
     ConsoleKeyInfo input = new ConsoleKeyInfo();
 
@@ -58,7 +66,12 @@ class Game
     inputString = input.Key.ToString();
     inputString = inputString.ToLower();
 
-    if(inputString == "s")
+    if(File.Exists(@"save.txt") && inputString == "f")
+    {
+      Console.Clear();
+      DeleteSave();
+    }
+    else if(inputString == "s")
     {
       Console.Clear();
       Instructions();
@@ -89,7 +102,8 @@ class Game
     Console.ReadKey(true);
     Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well.");
     Console.WriteLine("Your piercing attack hits the enemy weakly, but ignores enemy defense.");
-    Console.WriteLine("You may heal yourself, at the cost of a battle's worth of progress.");
+    Console.WriteLine("You may heal yourself once per game.");
+    Console.WriteLine("However, your health is restored after every battle.");
     Console.ReadKey(true);
     Console.Clear();
 
@@ -180,9 +194,10 @@ class Game
   // The method will also give a brief description to player before combat starts.
   static void CreateMonster(Character player, int scenario, ref Monster enemy)
   {
-    enemy.hp = progress * 15;
-    enemy.atk = progress / 2 + 1;
-    enemy.def = progress / 2 + 1;
+    int progress = player.progress;
+    enemy.hp = progress * 15 + 20;
+    enemy.atk = progress / 2 + 2;
+    enemy.def = progress / 2 + 2;
     if(scenario == 1)
     {
       enemy.hp += progress * 0.5;
@@ -191,7 +206,7 @@ class Game
     }
     else if (scenario == 2)
     {
-      enemy.atk += player.atk;
+      enemy.atk += player.atk / 2;
       Console.WriteLine("You hear the roar of an angry beast...");
     }
     else if (scenario == 3)
@@ -212,6 +227,7 @@ class Game
     double maxPlayerHp = player.hp;
     while(player.hp > 1 && enemy.hp > 1)
     {
+      combatstart:
       ConsoleKeyInfo keyPrompt = CombatPrompt(player, enemy);
       Console.Clear();
       if(keyPrompt.Key.ToString().ToLower() == "a")
@@ -228,9 +244,17 @@ class Game
       }
       else if(keyPrompt.Key.ToString().ToLower() == "h")
       {
-        Console.WriteLine ("You focus, and your mind repairs itself.  You feel closer to home.");
+        if(player.healed) 
+        {
+          Console.Clear();
+          Console.WriteLine("You feel too fatigued to do that again.");
+          Console.ReadKey(true);
+          goto combatstart;
+        }
+        Console.WriteLine ("You focus, and your mind repairs itself.");
+        Console.WriteLine ("You feel too fatigued to do that again.");
         player.hp = maxPlayerHp;
-        player.progress--;
+        player.healed = true;
       }
       else{
         WriteRed("Welp, Game Broke.");
@@ -300,6 +324,13 @@ class Game
     Console.ReadKey();
     Console.Clear();
     player.DeathSave();
+    while(true);
+  }
+
+  static void DeleteSave()
+  {
+    File.Delete(@"save.txt");
+    Console.WriteLine("Deleted!");
     while(true);
   }
 }
