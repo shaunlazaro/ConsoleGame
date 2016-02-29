@@ -4,6 +4,7 @@ using System.IO;
 abstract class Entity
 {
   public double hp;
+  public double mp;
   public double def;
   public double atk;
   public int progress;
@@ -18,8 +19,8 @@ class Character:Entity
 
   public void PrintStats()
   {
-    Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
-                      name, hp, atk, def);
+    Console.WriteLine("\n{0}'s HP: {1}\n{0}'s MP: {4}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
+                      name, hp, atk, def, mp);
     Console.WriteLine("{0}'s Progress: {1}\n", name, progress);
   }
 
@@ -50,11 +51,20 @@ class Character:Entity
       result = (player.atk) - enemy.def;
     }
     // Hits defense-focussed enemies harder.
+    else if (attack == "pierce")
+    {
+      result = player.atk;
+    }
+    else if (attack == "destroy")
+    {
+      result = player.atk * 4 - enemy.def;
+    }
     else
     {
-      result = (player.atk * 0.6);
+      result = 0;
+      Console.WriteLine("Game broke");
+      while (true);
     }
-
     return result;
   }
 }

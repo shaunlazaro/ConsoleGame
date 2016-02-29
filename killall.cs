@@ -20,8 +20,9 @@ class Game
   static void CreatePlayer(ref Character player)
   {
     string fileLocation = @"save.txt";
-    player.hp  = 100;
-    player.atk = 10;
+    player.hp  = 50;
+    player.mp  = 5;
+    player.atk = 5;
     player.def = 2;
     player.progress = 1;
     player.initialProgress = 0;
@@ -32,9 +33,10 @@ class Game
       using (x)
       {
         int playerProgress = int.Parse(x.ReadLine());
-        player.hp  += playerProgress;
+        player.hp  += playerProgress * 2;
+        player.mp  += playerProgress / 2;
         player.atk += playerProgress;
-        player.def += playerProgress / 2 - 2;
+        player.def += playerProgress / 2;
         player.initialProgress = playerProgress;
         player.name = x.ReadLine();
       }
@@ -100,9 +102,11 @@ class Game
     Console.ReadKey(true);
     Console.WriteLine("You will fight monsters");
     Console.ReadKey(true);
-    Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well.");
-    Console.WriteLine("Your piercing attack hits the enemy weakly, but ignores enemy defense.");
-    Console.WriteLine("You may heal yourself once per game.");
+    Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well. - 0 MP");
+    Console.WriteLine("Your piercing attack ignores enemy defense. - 1 MP");
+    Console.WriteLine("During fights, you may use mp to do massive damage to the monster - 4 MP");
+    Console.WriteLine("You may also flee the fight. This ends the battle, but reduces progress.");
+    Console.WriteLine("You may heal yourself in combat once per game.");
     Console.WriteLine("However, your health is restored after every battle.");
     Console.ReadKey(true);
     Console.Clear();
@@ -169,8 +173,14 @@ class Game
     //Game Loop.
     while(true)
     {
+      if (player.progress % 10 == 0)
+      {
+        CreateMonster(player, 4, ref enemy);
+      }
+      else
+      {
       CreateMonster(player, rng.Next( 1, 4 ), ref enemy);
-      
+      }
       // The combat method will return true if the player wins,
       // or false if the player dies.
       if(Combat(ref player, enemy))
@@ -216,7 +226,45 @@ class Game
       enemy.def = enemy.def / 2;
       Console.WriteLine("The creature in front of you cowers in fear, but won't let you progress.");
     }
+    else if (scenario == 4)
+    {
+      enemy.hp = enemy.hp * 3;
+      enemy.atk = enemy.atk * 2;
+      enemy.def = enemy.def * 1.5;
 
+      Random rng = new Random();
+      int rngInt = rng.Next(1,4);
+      if(rngInt == 1)
+      {
+      Console.WriteLine("You feel the air get heavy around you.");
+      Console.ReadKey(true);
+      Console.WriteLine("You turn.");
+      Console.ReadKey(true);
+      Console.WriteLine("You see a massive shadow");
+      Console.ReadKey(true);
+      Console.WriteLine("In front of you, is the largest rat you've ever seen."); 
+      }
+      if(rngInt == 2)
+      {
+      Console.WriteLine("You feel a strong gust of wind.");
+      Console.ReadKey(true);
+      Console.WriteLine("You turn.");
+      Console.ReadKey(true);
+      Console.WriteLine("You see a massive shadow");
+      Console.ReadKey(true);
+      Console.WriteLine("In front of you, is the largest bird you've ever seen."); 
+      }
+      if(rngInt == 3)
+      {
+      Console.WriteLine("You hear the voice of a another person.");
+      Console.ReadKey(true);
+      Console.WriteLine("No other human has come here in over a thousand years.");
+      Console.ReadKey(true);
+      Console.WriteLine("You turn.");
+      Console.ReadKey(true);
+      Console.WriteLine("In front of you, is the first human you've seen since your departure."); 
+      }
+    }
     enemy.PrintStats();
     Console.ReadKey(true);
     Console.Clear();
@@ -225,22 +273,36 @@ class Game
   static bool Combat(ref Character player, Monster enemy)
   {
     double maxPlayerHp = player.hp;
+    double maxPlayerMp =  player.mp;
+    
+    bool playerWin = false;
+
     while(player.hp > 1 && enemy.hp > 1)
     {
+
       combatstart:
       ConsoleKeyInfo keyPrompt = CombatPrompt(player, enemy);
       Console.Clear();
       if(keyPrompt.Key.ToString().ToLower() == "a")
       {
-        Console.WriteLine("You hit the enemy hard, but the monster blocks some damage.\n You do {0} damage", 
-          player.CharacterAttack("strong", player, enemy));
+        Console.WriteLine("You hit the enemy hard, but the monster blocks some damage.");
+        WriteDamage(player.CharacterAttack("strong", player, enemy));
         enemy.hp -= player.CharacterAttack("strong", player, enemy);
       }
       else if (keyPrompt.Key.ToString().ToLower() == "s")
       {
-        Console.WriteLine("You aim, and strike at the monster's weak point. \n You do {0} damage", 
-          player.CharacterAttack("pierce", player, enemy));
-        enemy.hp -= player.CharacterAttack("pierce", player, enemy);
+        if(player.mp > 0)
+        {
+          Console.WriteLine("You aim, and strike at the monster's weak point.");
+          WriteDamage(player.CharacterAttack("pierce", player, enemy));
+          enemy.hp -= player.CharacterAttack("pierce", player, enemy);
+          player.mp--;
+        }
+        else
+        {
+          Console.WriteLine("You are too fatigued to do that");
+          Console.ReadKey(true);
+        }
       }
       else if(keyPrompt.Key.ToString().ToLower() == "h")
       {
@@ -256,8 +318,28 @@ class Game
         player.hp = maxPlayerHp;
         player.healed = true;
       }
-      else{
-        WriteRed("Welp, Game Broke.");
+      else if(keyPrompt.Key.ToString().ToLower() == "d")
+      {
+        Console.WriteLine("You focus, and attempt to launch a powerful energy beam at the enemy.");
+        if(player.mp > 3)
+        {
+          player.mp -= 4;
+          Console.WriteLine("Your energy beam collides with the energy in a massive explosion.");
+          player.CharacterAttack("destroy", player, enemy);
+          enemy.hp -= player.CharacterAttack("destroy", player, enemy);
+        }
+        else
+        {
+          player.mp = 0;
+          Console.WriteLine("You send some sparks from your hand, but you feel too drained to launch an energy beam");
+        }
+      }
+      else if (keyPrompt.Key.ToString().ToLower() == "f")
+      {
+        player.progress--;
+        player.progress--;
+        Console.WriteLine("You run back the way you came");
+        goto fleeing;
       }
       Console.ReadKey(true);
 
@@ -265,14 +347,21 @@ class Game
       player.hp -= enemy.EnemyBasic(player, enemy);
       Console.ReadKey(true);
     }
-    Console.WriteLine("The monster has been slain.");
-    Console.ReadKey();
-    bool playerWin = false;
-    if(player.hp > 0)
+    
+    if(player.hp >= 1)
     {
       playerWin = true;
+      Console.WriteLine("The monster has been slain.");
+      Console.ReadKey(true);
+    }
+    fleeing:
+    if(player.hp >= 1)
+    {
+      playerWin = true;
+      Console.ReadKey(true);
     }
     player.hp = maxPlayerHp;
+    player.mp = maxPlayerMp;
     return playerWin;
   }
 
@@ -284,16 +373,26 @@ class Game
     player.PrintStats();
     enemy.PrintStats();
     Console.WriteLine("What would you like to do?");
-    Console.WriteLine("\n Blunt Force Attack - A" +
-                      "\n Piercing Attack    - S" +
-                      "\n Heal Yourself      - H");
+    Console.WriteLine("\n Blunt Force Attack   - A" +
+                      "\n Piercing Attack - 1MP- S" +
+                      "\n Obliterate -4MP      - D" +
+                      "\n Flee -1 Progress     - F" +
+                      "\n Heal Yourself        - H");
     playerPress = Console.ReadKey(true);
     string playerPressString = playerPress.Key.ToString();
     playerPressString = playerPressString.ToLower();
-    if(playerPressString != "a" && playerPressString != "s" && playerPressString != "h")
+    switch(playerPressString)
     {
+      case"a":
+      case"s":
+      case"d":
+      case"f":
+      case"h":
+      break;
+
+      default:
       Console.Clear();
-      WriteRed("Please press A or S\n");
+      WriteRed("Please press the correct key.\n");
       Console.ReadKey(true);
       goto promptAction;      
     }
@@ -303,17 +402,18 @@ class Game
   // Used For Errors.
   static void WriteRed(string s)
   {
-    Console.BackgroundColor = ConsoleColor.Cyan;
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine(s);
     Console.ResetColor();
   }
-
-  // Used for narration parts.
-  static void WriteNarration(string s)
+  // Blue
+  static void WriteDamage(double s)
   {
-    //WIP
+    Console.ForegroundColor = ConsoleColor.Blue;
+    Console.WriteLine("You did {0} damage", s);
+    Console.ResetColor();
   }
+
 
   static void Death(Character player)
   {
