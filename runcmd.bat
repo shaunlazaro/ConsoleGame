@@ -1,3 +1,4 @@
+@echo off
 pushd  R:\JEROM\GR08_Berardi\KillAll Game\ConsoleGame
 title Command Executor
 color 07

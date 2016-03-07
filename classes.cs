@@ -7,8 +7,8 @@ abstract class Entity
   public double mp;
   public double def;
   public double atk;
-  public int progress;
-  public int initialProgress;
+  public long progress;
+  public long initialProgress;
   public string name;
 
 }
@@ -16,6 +16,7 @@ abstract class Entity
 class Character:Entity
 {
   public bool healed;
+  public bool freeKill;
 
   public void PrintStats()
   {
@@ -71,7 +72,7 @@ class Character:Entity
 
 class Monster:Entity
 {
-
+  public bool bossMonster;
   public void PrintStats()
   {
     Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
@@ -79,15 +80,30 @@ class Monster:Entity
   }
   public double EnemyBasic(Character player, Monster enemy)
   {
-    double result = enemy.atk - player.def;
-    if(result < 0){result = 1;}
-    Console.WriteLine("The monster strikes you for {0} damage", result);
-    return result;
+    if(!bossMonster)
+    {
+      double result = enemy.atk - player.def;
+      if(result < 0){result = 1;}
+      WriteEnemyDamage(result);
+      return result;
+    }
+    else
+    {
+      return EnemyStrong(player, enemy);
+    }  
   }
   public double EnemyStrong(Character player, Monster enemy)
   {
     double result = (enemy.atk * 1.5 - player.def);
-    Console.WriteLine("The monster strikes you for {0} damage", result);
+    WriteEnemyDamage(result);
     return result; 
+  }
+
+  // Magenta
+  static void WriteEnemyDamage(double s)
+  {
+    Console.ForegroundColor = ConsoleColor.Magenta;
+    Console.WriteLine("The enemy did {0} damage", s);
+    Console.ResetColor();
   }
 }

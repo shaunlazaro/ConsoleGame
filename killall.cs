@@ -26,6 +26,7 @@ class Game
     player.def = 2;
     player.progress = 1;
     player.initialProgress = 0;
+    player.freeKill = true;
 
     if(File.Exists(fileLocation))
     {
@@ -41,7 +42,7 @@ class Game
         player.name = x.ReadLine();
       }
       Console.Clear();
-      Console.WriteLine("You feel the power of your ancestors passing through your body");
+      Console.WriteLine("You feel the power of your ancestors passing through your body.");
       Console.ReadKey(true);
     }
     else
@@ -89,6 +90,7 @@ class Game
     }
     else
     {
+      Console.Clear();
       goto title;
     }
   }
@@ -98,9 +100,9 @@ class Game
     Console.WriteLine("Instructions \n\n\n");
     Console.WriteLine("In the KillAll game, your goal is to get as far as possible...\n");
     Console.ReadKey(true);
-    Console.WriteLine("Before you die");
+    Console.WriteLine("Before you die.");
     Console.ReadKey(true);
-    Console.WriteLine("You will fight monsters");
+    Console.WriteLine("You will fight monsters.");
     Console.ReadKey(true);
     Console.WriteLine("Your blunt force attack hits the enemy hard, scaling off of your attack well. - 0 MP");
     Console.WriteLine("Your piercing attack ignores enemy defense. - 1 MP");
@@ -108,6 +110,7 @@ class Game
     Console.WriteLine("You may also flee the fight. This ends the battle, but reduces progress.");
     Console.WriteLine("You may heal yourself in combat once per game.");
     Console.WriteLine("However, your health is restored after every battle.");
+    Console.WriteLine("You may also instantly kill the enemy once per game.");
     Console.ReadKey(true);
     Console.Clear();
 
@@ -115,13 +118,11 @@ class Game
   }
   static void Credits()
   {
-    Console.WriteLine("EVERYTHING BY SHAUN LAZARO XG");
+    Console.WriteLine("EVERYTHING BY SHAUN LAZARO XG.");
     Console.ReadKey(true);
     Console.Clear();
     TitleScreen();
   }
-
-
 
   static string ChooseName()
   {
@@ -193,7 +194,7 @@ class Game
       else
       {
         Console.Clear();
-        WriteRed("You died");
+        WriteRed("You died.");
         player.PrintStats();
         Death(player);
       }
@@ -204,10 +205,11 @@ class Game
   // The method will also give a brief description to player before combat starts.
   static void CreateMonster(Character player, int scenario, ref Monster enemy)
   {
-    int progress = player.progress;
+    long progress = player.progress;
     enemy.hp = progress * 15 + 20;
     enemy.atk = progress / 2 + 2;
     enemy.def = progress / 2 + 2;
+    enemy.bossMonster = false;
     if(scenario == 1)
     {
       enemy.hp += progress * 0.5;
@@ -216,7 +218,7 @@ class Game
     }
     else if (scenario == 2)
     {
-      enemy.atk += player.atk / 2;
+      enemy.atk += progress;
       Console.WriteLine("You hear the roar of an angry beast...");
     }
     else if (scenario == 3)
@@ -231,38 +233,39 @@ class Game
       enemy.hp = enemy.hp * 3;
       enemy.atk = enemy.atk * 2;
       enemy.def = enemy.def * 1.5;
+      enemy.bossMonster = true;
 
       Random rng = new Random();
       int rngInt = rng.Next(1,4);
       if(rngInt == 1)
       {
-      Console.WriteLine("You feel the air get heavy around you.");
-      Console.ReadKey(true);
-      Console.WriteLine("You turn.");
-      Console.ReadKey(true);
-      Console.WriteLine("You see a massive shadow");
-      Console.ReadKey(true);
-      Console.WriteLine("In front of you, is the largest rat you've ever seen."); 
+        Console.WriteLine("You feel the air get heavy around you.");
+        Console.ReadKey(true);
+        Console.WriteLine("You turn.");
+        Console.ReadKey(true);
+        Console.WriteLine("You see a massive shadow.");
+        Console.ReadKey(true);
+        Console.WriteLine("In front of you, is the largest rat you've ever seen."); 
       }
       if(rngInt == 2)
       {
-      Console.WriteLine("You feel a strong gust of wind.");
-      Console.ReadKey(true);
-      Console.WriteLine("You turn.");
-      Console.ReadKey(true);
-      Console.WriteLine("You see a massive shadow");
-      Console.ReadKey(true);
-      Console.WriteLine("In front of you, is the largest bird you've ever seen."); 
+        Console.WriteLine("You feel a strong gust of wind.");
+        Console.ReadKey(true);
+        Console.WriteLine("You turn.");
+        Console.ReadKey(true);
+        Console.WriteLine("You see a massive shadow.");
+        Console.ReadKey(true);
+        Console.WriteLine("In front of you, is the largest bird you've ever seen."); 
       }
       if(rngInt == 3)
       {
-      Console.WriteLine("You hear the voice of a another person.");
-      Console.ReadKey(true);
-      Console.WriteLine("No other human has come here in over a thousand years.");
-      Console.ReadKey(true);
-      Console.WriteLine("You turn.");
-      Console.ReadKey(true);
-      Console.WriteLine("In front of you, is the first human you've seen since your departure."); 
+        Console.WriteLine("You hear the voice of a another person.");
+        Console.ReadKey(true);
+        Console.WriteLine("No other human has come here in over a thousand years.");
+        Console.ReadKey(true);
+        Console.WriteLine("You turn.");
+        Console.ReadKey(true);
+        Console.WriteLine("In front of you, is the first human you've seen for a while now."); 
       }
     }
     enemy.PrintStats();
@@ -331,21 +334,37 @@ class Game
         else
         {
           player.mp = 0;
-          Console.WriteLine("You send some sparks from your hand, but you feel too drained to launch an energy beam");
+          Console.WriteLine("You send some sparks from your hand, but you feel too drained to launch an energy beam.");
         }
       }
       else if (keyPrompt.Key.ToString().ToLower() == "f")
       {
         player.progress--;
         player.progress--;
-        Console.WriteLine("You run back the way you came");
+        Console.WriteLine("You run back the way you came.");
         goto fleeing;
+      }
+      else if(keyPrompt.Key.ToString().ToLower() == "g")
+      {
+        if(player.freeKill)
+        {
+          enemy.hp = 0;
+          Console.WriteLine("You pray to god, and the monster is condemned to hell.");
+        }
+        else
+        {
+          Console.WriteLine("You don't feel like God will help again.");
+          goto combatstart;
+        }
       }
       Console.ReadKey(true);
 
+      if(enemy.hp > 0)
+      {
       Console.WriteLine("The enemy returns with an attack of its own!");
       player.hp -= enemy.EnemyBasic(player, enemy);
       Console.ReadKey(true);
+      }
     }
     
     if(player.hp >= 1)
@@ -377,6 +396,7 @@ class Game
                       "\n Piercing Attack - 1MP- S" +
                       "\n Obliterate -4MP      - D" +
                       "\n Flee -1 Progress     - F" +
+                      "\n Instant Kill         - G" +
                       "\n Heal Yourself        - H");
     playerPress = Console.ReadKey(true);
     string playerPressString = playerPress.Key.ToString();
@@ -387,6 +407,7 @@ class Game
       case"s":
       case"d":
       case"f":
+      case"g":
       case"h":
       break;
 
@@ -409,18 +430,17 @@ class Game
   // Blue
   static void WriteDamage(double s)
   {
-    Console.ForegroundColor = ConsoleColor.Blue;
+    Console.ForegroundColor = ConsoleColor.Cyan;
     Console.WriteLine("You did {0} damage", s);
     Console.ResetColor();
   }
-
 
   static void Death(Character player)
   {
     Console.ReadKey(true);
     Console.Clear();
-    Console.WriteLine("Although it may seem pointless, every end is a new beginning");
-    Console.WriteLine("Your stats will increase based on how far you got");
+    Console.WriteLine("Although it may seem pointless, every end is a new beginning.");
+    Console.WriteLine("Your stats will increase based on how far you got.");
     Console.ReadKey();
     Console.Clear();
     player.DeathSave();
