@@ -17,6 +17,7 @@ class Character:Entity
 {
   public bool healed;
   public bool freeKill;
+  public string playerClass;
 
   public void PrintStats()
   {

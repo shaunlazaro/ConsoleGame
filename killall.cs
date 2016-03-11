@@ -47,7 +47,9 @@ class Game
     }
     else
     {
+      string playerClass = ChooseClass();
       player.name = ChooseName();
+
     }
   }
   static void TitleScreen()
@@ -165,6 +167,38 @@ class Game
 
     Console.Clear();
     return name;
+  }
+
+  static string ChooseClass()
+  {
+    chooseName:
+    Console.Clear();
+    Console.WriteLine("Choose Your Class\n");
+    Console.WriteLine("Quietist - Q\nWizard - W\nE.T. - E\nRogue - R");
+    Console.WriteLine("Quietists are cool guys, but they don't lift.");
+    Console.WriteLine("Wizards are smart, they have the magicks.");
+    Console.WriteLine("Extra Terrestrials are strong, but not magical like the humans.");
+    Console.WriteLine("Rogues are very very strong, but are vulnerable, and not magical.");
+    
+    input = Console.ReadKey(true);
+    inputString = input.Key.ToString();
+    inputString = inputString.ToLower();
+    switch(inputString)
+    {
+      case"q":
+      case"w":
+      case"e":
+      case"r":
+      break;
+
+      default:
+      Console.Clear();
+      Console.WriteLine("Press the correct key;")
+      Console.ReadKey(true);
+      goto chooseName;
+    }
+  
+    return inputString;
   }
 
   static void LaunchGame(Character player)
