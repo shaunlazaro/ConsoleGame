@@ -1,4 +1,5 @@
 using System;
+
 class Game
 {
   static void Main()
@@ -58,8 +59,10 @@ class Game
     return name;
   }
 
+  
+
   static void LaunchGame(Character player)
   {
-    player.PrintStats();
+    CreateEnemy(player);
   }
 }

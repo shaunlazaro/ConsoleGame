@@ -1,6 +1,6 @@
 using System;
 
-class Character
+public abstract class Character
 {
   public int hp;
   public int def;
@@ -10,7 +10,7 @@ class Character
 
   public void PrintStats()
   {
-    Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n {0}'s DEF: {3}\n",
+    Console.WriteLine("\n{0}'s HP: {1}\n{0}'s ATK: {2}\n{0}'s DEF: {3}\n",
                       name, hp, atk, def);
     Console.WriteLine("Progress Made: {0}\n",progress);
   }
